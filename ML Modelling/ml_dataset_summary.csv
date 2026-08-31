@@ -1,0 +1,59 @@
+Column,Type,Missing,Min,Max,Mean,Std,Role
+participant,object,0,,,,,Metadata
+Group,object,0,,,,,Metadata
+Muscle,object,0,,,,,Metadata
+shape_class,object,0,,,,,Metadata
+HR_PC1,float64,0,-8.1477,10.1895,0.0,3.8741,PC Feature (HR/BP)
+HR_PC2,float64,0,-4.5182,6.4242,0.0,2.6691,PC Feature (HR/BP)
+HR_PC3,float64,0,-6.2676,4.8423,0.0,2.0382,PC Feature (HR/BP)
+HR_PC4,float64,0,-5.6861,4.6077,0.0,1.7432,PC Feature (HR/BP)
+HR_PC5,float64,0,-5.9018,4.9781,-0.0,1.4401,PC Feature (HR/BP)
+HR_PC6,float64,0,-3.5267,7.9475,0.0,1.2588,PC Feature (HR/BP)
+HR_PC7,float64,0,-4.6124,3.0736,-0.0,1.1504,PC Feature (HR/BP)
+HR_PC8,float64,0,-2.4023,4.5405,0.0,1.1218,PC Feature (HR/BP)
+HR_PC9,float64,0,-2.616,4.8032,-0.0,1.0422,PC Feature (HR/BP)
+HR_PC10,float64,0,-4.079,7.009,0.0,0.9887,PC Feature (HR/BP)
+HR_PC11,float64,0,-3.5011,2.6945,0.0,0.9668,PC Feature (HR/BP)
+HR_PC12,float64,0,-3.2489,4.072,-0.0,0.9569,PC Feature (HR/BP)
+HR_PC13,float64,0,-3.0506,2.9158,0.0,0.8518,PC Feature (HR/BP)
+HR_PC14,float64,0,-3.5788,3.9555,0.0,0.7655,PC Feature (HR/BP)
+HR_PC15,float64,0,-2.965,1.8592,0.0,0.6937,PC Feature (HR/BP)
+HR_PC16,float64,0,-2.7397,1.9969,0.0,0.6688,PC Feature (HR/BP)
+HR_PC17,float64,0,-1.1284,5.1656,-0.0,0.6418,PC Feature (HR/BP)
+BP_PC2,float64,0,-7.6852,4.3064,0.0,1.7913,PC Feature (HR/BP)
+BP_PC3,float64,0,-4.4336,6.7747,0.0,1.5921,PC Feature (HR/BP)
+BP_PC4,float64,0,-4.9416,3.8284,0.0,1.4485,PC Feature (HR/BP)
+BP_PC5,float64,0,-3.4338,6.4067,-0.0,1.3246,PC Feature (HR/BP)
+BP_PC6,float64,0,-2.554,3.7297,0.0,1.142,PC Feature (HR/BP)
+BP_PC7,float64,0,-3.1529,2.598,0.0,1.0342,PC Feature (HR/BP)
+BP_PC8,float64,0,-3.2143,2.9626,0.0,0.8658,PC Feature (HR/BP)
+Age,int64,0,18.0,51.0,25.735,6.5057,Covariate
+Weight_kg,float64,0,50.0,97.0,67.8889,9.8989,Covariate
+Height_cm,float64,0,1.8,185.0,166.0765,17.5922,Covariate
+BMI,float64,0,15.5,33.3,24.2427,3.6655,Covariate
+Gender_bin,int64,0,0.0,1.0,0.8547,0.3532,Covariate
+Training_yrs,float64,0,0.0,667.0,10.1408,75.1106,Covariate
+Stress_Index_pct,float64,0,10.0,65.0,42.3077,12.903,Covariate
+Sleep_Index_pct,float64,0,52.38,100.0,82.5635,11.5232,Covariate
+Nutrition_Index_pct,float64,0,47.31,76.6,59.8394,6.8871,Covariate
+Protein_g_kg,float64,0,0.53,4.81,1.4795,0.6871,Covariate
+Calories_kcal,int64,0,718.0,4651.0,1894.5,701.914,Covariate
+M_BB,bool,0,0.0,1.0,0.2051,0.4047,Encoding
+M_BF,bool,0,0.0,1.0,0.1154,0.3202,Encoding
+M_DL,bool,0,0.0,1.0,0.1624,0.3696,Encoding
+M_FDS,bool,0,0.0,1.0,0.0342,0.1821,Encoding
+M_GA,bool,0,0.0,1.0,0.1154,0.3202,Encoding
+M_TA,bool,0,0.0,1.0,0.0684,0.2529,Encoding
+M_TB,bool,0,0.0,1.0,0.1667,0.3735,Encoding
+M_VL,bool,0,0.0,1.0,0.1325,0.3397,Encoding
+SC_Fusiform,bool,0,0.0,1.0,0.3205,0.4677,Encoding
+SC_Pennate,bool,0,0.0,1.0,0.6453,0.4794,Encoding
+SC_Strap,bool,0,0.0,1.0,0.0342,0.1821,Encoding
+G_G1,bool,0,0.0,1.0,0.6453,0.4794,Encoding
+G_G2,bool,0,0.0,1.0,0.0513,0.221,Encoding
+G_G3,bool,0,0.0,1.0,0.0684,0.2529,Encoding
+G_G4,bool,0,0.0,1.0,0.235,0.4249,Encoding
+Muscle_label,int64,0,0.0,7.0,3.2735,2.536,Encoding
+shape_class_label,int64,0,0.0,3.0,0.7479,0.6288,Encoding
+Group_label,int64,0,0.0,3.0,0.8932,1.2843,Encoding
+volume_corrected_cm3,float64,0,14.954,236.337,89.382,40.0367,Target

@@ -1,0 +1,26 @@
+{
+  "parsimonious": {
+    "Model": "Parsimonious (Spearman-sig PCs + Muscle FE)",
+    "LogLikelihood": -313.4124,
+    "AIC": 670.8248,
+    "BIC": 746.8419,
+    "ICC": 0.0002,
+    "R2_marginal": 0.3508,
+    "R2_conditional": 0.3509,
+    "N_observations": 234,
+    "N_participants": 63,
+    "converged": true
+  },
+  "full": {
+    "Model": "Full (all retained PCs + Muscle FE)",
+    "LogLikelihood": -337.0821,
+    "AIC": 748.1643,
+    "BIC": 876.0112,
+    "ICC": 0.0067,
+    "R2_marginal": 0.3679,
+    "R2_conditional": 0.3721,
+    "N_observations": 234,
+    "N_participants": 63,
+    "converged": true
+  }
+}

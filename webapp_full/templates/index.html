@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HRVBP-HyperNet — Full CV Pipeline</title>
+<script src="/static/chart.min.js"></script>
+<style>
+/* ── Reset & tokens ──────────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080e1f;--surface:#0f1829;--surface2:#162038;--border:#1e2d50;
+  --accent:#00d2aa;--accent2:#f59e0b;--purple:#8b5cf6;--coral:#f87171;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --r:12px;--r-lg:20px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;overflow-x:hidden}
+h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,3vw,2rem);font-weight:700}
+h3{font-size:1.05rem;font-weight:600}
+p{color:var(--text2)}
+.ey{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem}
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,14,31,.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:.95rem;color:var(--text);text-decoration:none}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.nav-links{display:flex;gap:1.8rem;list-style:none}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:.83rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--accent)}
+.badge-new{background:linear-gradient(135deg,var(--accent),#00a88a);color:#000;font-size:.67rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;margin-left:.35rem}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.hero{min-height:100vh;display:flex;align-items:center;padding:7rem 2rem 4rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-15%;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(ellipse,rgba(0,210,170,.08),transparent 70%);pointer-events:none}
+.hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,210,170,.1);border:1px solid rgba(0,210,170,.3);color:var(--accent);font-size:.78rem;font-weight:600;padding:.35rem .85rem;border-radius:20px;margin-bottom:1.3rem}
+.hero h1{margin-bottom:.9rem;background:linear-gradient(135deg,#fff 40%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-cta{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:1.8rem}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.75rem 1.5rem;border-radius:9px;font-weight:600;font-size:.88rem;text-decoration:none;transition:all .2s;cursor:pointer;border:none}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#00a88a);color:#000}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,210,170,.3)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.h-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;transition:border-color .2s}
+.h-stat:hover{border-color:var(--accent)}
+.sv{font-size:1.8rem;font-weight:800}.sl{font-size:.78rem;color:var(--text2);margin-top:.15rem}
+.c-teal{color:var(--accent)}.c-amber{color:var(--accent2)}.c-purple{color:var(--purple)}.c-coral{color:var(--coral)}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.sec{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.sec-hd{text-align:center;margin-bottom:2.8rem}
+.sec-hd p{max-width:560px;margin:.65rem auto 0}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:0 2rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem}
+.metric-card{text-align:center;padding:1.8rem 1.2rem}
+.mv{font-size:2.1rem;font-weight:800;margin-bottom:.25rem}
+.ms{font-size:.77rem;color:var(--text3)}
+
+/* ── Pipeline steps ──────────────────────────────────────────────────────── */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;position:relative}
+.pipeline::before{content:'';position:absolute;top:2.8rem;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--accent),var(--purple),var(--accent2));z-index:0}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem 1rem;text-align:center;position:relative;z-index:1}
+.step-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .8rem}
+.step-num{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-weight:800;font-size:.7rem;padding:.18rem .6rem;border-radius:20px}
+
+/* ── Prediction panels ───────────────────────────────────────────────────── */
+.pred-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:var(--surface2);padding:.4rem;border-radius:10px;width:fit-content}
+.tab{padding:.5rem 1.2rem;border-radius:7px;font-weight:600;font-size:.85rem;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .2s}
+.tab.active{background:var(--accent);color:#000}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* Simple predictor (group proxy) */
+.pred-grid{display:grid;grid-template-columns:400px 1fr;gap:1.5rem;align-items:start}
+.fg{margin-bottom:1.1rem}
+.fg label{display:block;font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:.35rem}
+.fg select,.fg input,.fg textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.65rem .9rem;color:var(--text);font-size:.87rem;outline:none;transition:border-color .2s;font-family:inherit}
+.fg select:focus,.fg input:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:64px}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-submit{width:100%;padding:.85rem;border-radius:9px;background:linear-gradient(135deg,var(--accent),#00a88a);color:#000;font-weight:700;font-size:.9rem;border:none;cursor:pointer;transition:all .2s;margin-top:.4rem}
+.form-submit:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,210,170,.3)}
+.form-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Result box */
+.result-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;min-height:380px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.placeholder-icon{font-size:2.8rem;opacity:.3;margin-bottom:.8rem}
+.result-content{display:none;width:100%}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:1rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pred-note{font-size:.73rem;color:var(--text3);margin-top:.9rem;text-align:left;border-top:1px solid var(--border);padding-top:.7rem;font-style:italic}
+
+/* Full prediction form */
+.full-form{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.form-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem}
+.form-section-title{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:.9rem;text-transform:uppercase;letter-spacing:.08em}
+.info-note{background:rgba(0,210,170,.06);border:1px solid rgba(0,210,170,.2);border-radius:7px;padding:.7rem .9rem;font-size:.78rem;color:var(--text2);margin-top:.5rem}
+.hrv-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.9rem}
+.hrv-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.7rem;text-align:center}
+.hrv-val{font-size:1.1rem;font-weight:700;color:var(--accent)}
+.hrv-lbl{font-size:.68rem;color:var(--text3);margin-top:.15rem}
+.pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.9rem}
+.pc-chip{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.5rem;text-align:center;font-size:.75rem}
+.pc-name{color:var(--text3);font-size:.68rem}
+.pc-val{font-weight:700;margin-top:.1rem}
+.pos{color:var(--accent)}.neg{color:var(--coral)}
+
+/* File upload zone */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;position:relative}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-icon{font-size:2rem;margin-bottom:.5rem;opacity:.6}
+.upload-name{font-size:.8rem;color:var(--accent);margin-top:.3rem;font-weight:600}
+
+/* Charts */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.4rem}
+.chart-title{font-size:.92rem;font-weight:600;margin-bottom:.9rem}
+.chart-sub{font-size:.75rem;color:var(--text3);margin-top:.35rem}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--surface2);padding:.7rem 1rem;text-align:left;font-weight:600;color:var(--text2);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+td{padding:.75rem 1rem;border-bottom:1px solid rgba(30,45,80,.4);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,210,170,.03)}
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:5px;font-size:.73rem;font-weight:600}
+.best{background:rgba(0,210,170,.15);color:var(--accent)}
+.G1{background:rgba(0,210,170,.13);color:var(--accent)}
+.G2{background:rgba(245,158,11,.13);color:var(--accent2)}
+.G3{background:rgba(139,92,246,.13);color:var(--purple)}
+.G4{background:rgba(248,113,113,.13);color:var(--coral)}
+
+/* Alerts */
+.alert{padding:.8rem 1rem;border-radius:8px;font-size:.85rem;margin-top:.8rem}
+.alert-err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--coral)}
+.alert-ok{background:rgba(0,210,170,.08);border:1px solid rgba(0,210,170,.25);color:var(--accent)}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-inner,.pred-grid,.full-form,.grid3,.grid2,.pipeline{grid-template-columns:1fr}
+  .pipeline::before{display:none}
+  nav{padding:.8rem 1rem}.nav-links{gap:1rem}
+  .hrv-summary,.pc-grid{grid-template-columns:repeat(2,1fr)}
+}
+.fade{opacity:0;transform:translateY(18px);transition:opacity .5s,transform .5s}
+.fade.in{opacity:1;transform:none}
+
+/* ── Live Band ───────────────────────────────────────────────────────────── */
+.live-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+.connect-bar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.connect-btn{display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.3rem;border-radius:9px;font-weight:700;font-size:.86rem;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),#00a88a);color:#000;transition:all .2s}
+.connect-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,210,170,.3)}
+.connect-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.status-dot.connected{background:#22c55e;box-shadow:0 0 8px #22c55e80}
+.status-dot.recording{background:var(--coral);animation:sdot-blink 1s step-end infinite}
+@keyframes sdot-blink{50%{opacity:0}}
+.bpm-wrap{text-align:center;padding:1rem .5rem .6rem;position:relative}
+.bpm-number{font-size:5rem;font-weight:900;line-height:1;color:var(--coral);font-variant-numeric:tabular-nums;letter-spacing:-.04em;transition:color .3s}
+.bpm-unit{font-size:.78rem;color:var(--text3);margin-top:.2rem}
+.heart-icon{font-size:1.4rem;display:inline-block;transition:transform .15s}
+.heart-icon.pulse{animation:hbeat .35s ease-out}
+@keyframes hbeat{0%{transform:scale(1)}30%{transform:scale(1.55)}80%{transform:scale(.95)}100%{transform:scale(1)}}
+.phase-pills{display:flex;gap:.6rem;margin:.7rem 0}
+.phase-pill{flex:1;padding:.55rem .8rem;border-radius:8px;font-size:.79rem;font-weight:600;border:2px solid transparent;transition:all .2s}
+.phase-pill.rest-pill{background:rgba(0,210,170,.07);border-color:rgba(0,210,170,.2);color:var(--text3)}
+.phase-pill.rest-pill.active{background:rgba(0,210,170,.15);border-color:var(--accent);color:var(--accent)}
+.phase-pill.ex-pill{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:var(--text3)}
+.phase-pill.ex-pill.active{background:rgba(245,158,11,.15);border-color:var(--accent2);color:var(--accent2)}
+.pill-label{font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem}
+.pill-val{font-size:1.05rem;font-weight:700}
+.live-chart-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;margin:.7rem 0}
+.live-chart-title{font-size:.77rem;font-weight:600;color:var(--text2);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.rec-dot{width:8px;height:8px;background:var(--coral);border-radius:50%;display:inline-block;animation:sdot-blink 1s step-end infinite}
+.phase-ctrl{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.85rem}
+.phase-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.55rem 1.1rem;border-radius:8px;font-weight:600;font-size:.82rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all .2s}
+.phase-btn:hover{border-color:var(--accent);color:var(--accent)}
+.phase-btn.primary{background:linear-gradient(135deg,var(--accent),#00a88a);color:#000;border-color:transparent}
+.phase-btn.primary:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,210,170,.3)}
+.phase-btn.amber{background:var(--accent2);color:#000;border-color:transparent}
+.phase-btn.danger{border-color:var(--coral);color:var(--coral)}
+.phase-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.live-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:.6rem 0}
+.live-stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.55rem;text-align:center}
+.live-stat-val{font-size:1.15rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.live-stat-lbl{font-size:.64rem;color:var(--text3);margin-top:.1rem}
+.done-banner{background:rgba(0,210,170,.06);border:1px solid rgba(0,210,170,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem}
+.done-banner strong{color:var(--accent)}
+@media(max-width:900px){.live-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark">💪</div>
+    HRVBP-HyperNet
+  </a>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#predictor">Predict<span class="badge-new">Full CV</span></a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#performance">Models</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">🔬 Full CV Signal Pipeline</div>
+      <h1>HRV + Blood Pressure → Muscle Volume</h1>
+      <p>Upload your Polar H10 RR interval file and blood pressure readings. The HRVBP-HyperNet pipeline projects your cardiovascular profile through a trained PCA → LME model to estimate individual skeletal muscle volumes.</p>
+      <div class="hero-cta">
+        <a href="#predictor" class="btn btn-primary">Upload RR File →</a>
+        <a href="#results" class="btn btn-ghost">View Study Results</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="h-stat"><div class="sv c-teal">78</div><div class="sl">Participants</div></div>
+      <div class="h-stat"><div class="sv c-amber">44</div><div class="sl">HRV Features</div></div>
+      <div class="h-stat"><div class="sv c-purple">0.7983</div><div class="sl">Dice Score</div></div>
+      <div class="h-stat"><div class="sv c-coral">0.509</div><div class="sl">CCC (LME)</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Overview ───────────────────────────────────────────────────────────── -->
+<div class="sec" id="overview">
+  <div class="sec-hd fade">
+    <div class="ey">Study Overview</div>
+    <h2>MUSCAST Dataset — Key Metrics</h2>
+    <p>78 participants · 8 muscle groups · 4 activity groups · 148 test slices</p>
+  </div>
+  <div class="grid3 fade">
+    <div class="card metric-card"><div class="mv c-teal">0.7983</div><h3>Segmentation Dice</h3><div class="ms">RST-UNet V2 · 148 slices</div></div>
+    <div class="card metric-card"><div class="mv c-amber">32.59 cm³</div><h3>Prediction RMSE</h3><div class="ms">LME · 16 test participants</div></div>
+    <div class="card metric-card"><div class="mv c-purple">0.298</div><h3>Variance Explained R²</h3><div class="ms">LME · CV predictors</div></div>
+    <div class="card metric-card"><div class="mv c-coral">0.509</div><h3>CCC</h3><div class="ms">Lin's concordance · LME</div></div>
+    <div class="card metric-card"><div class="mv c-teal">22.57 px</div><h3>HD95 Boundary Error</h3><div class="ms">RST-UNet V2</div></div>
+    <div class="card metric-card"><div class="mv c-amber">0.526</div><h3>Responder F1</h3><div class="ms">High/Low hypertrophy</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── Pipeline ───────────────────────────────────────────────────────────── -->
+<div class="sec">
+  <div class="sec-hd fade">
+    <div class="ey">Full CV Pipeline</div>
+    <h2>From Raw Signals to Muscle Volume</h2>
+  </div>
+  <div class="pipeline fade">
+    <div class="step"><span class="step-num">01</span><div class="step-icon" style="background:rgba(0,210,170,.15)">❤️</div><h3>RR Intervals</h3><p style="font-size:.8rem">Polar H10 beat-to-beat intervals. REST + EXERCISE phases split by beat count.</p></div>
+    <div class="step"><span class="step-num">02</span><div class="step-icon" style="background:rgba(139,92,246,.15)">💉</div><h3>BP Readings</h3><p style="font-size:.8rem">Resting, post-exercise, and exercise series SBP/DBP. 19 derived variability features.</p></div>
+    <div class="step"><span class="step-num">03</span><div class="step-icon" style="background:rgba(245,158,11,.15)">📊</div><h3>44 HRV Features</h3><p style="font-size:.8rem">Time · Frequency · Nonlinear · RQA metrics. Log-transformed and standardised.</p></div>
+    <div class="step"><span class="step-num">04</span><div class="step-icon" style="background:rgba(248,113,113,.15)">🔢</div><h3>PCA Projection</h3><p style="font-size:.8rem">Trained StandardScaler + 17 HR PCs + 8 BP PCs. 9 PCs enter the LME formula.</p></div>
+    <div class="step"><span class="step-num">05</span><div class="step-icon" style="background:rgba(0,210,170,.15)">🎯</div><h3>LME Prediction</h3><p style="font-size:.8rem">Fixed-effects formula. Back-transform z-score → cm³. All 8 muscles at once.</p></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── Predictor ──────────────────────────────────────────────────────────── -->
+<div class="sec" id="predictor">
+  <div class="sec-hd fade">
+    <div class="ey">Muscle Volume Predictor</div>
+    <h2>Individual or Group-Proxy Prediction</h2>
+    <p>Upload your RR interval file for a fully individualised prediction, or use the quick form for a group-average estimate.</p>
+  </div>
+
+  <div class="fade">
+    <div class="pred-tabs">
+      <button class="tab active" onclick="switchTab('live')">❤️ Live Band</button>
+      <button class="tab" onclick="switchTab('full')">Upload RR File</button>
+      <button class="tab" onclick="switchTab('simple')">Quick Estimate</button>
+    </div>
+
+    <!-- ── Live Band tab ──────────────────────────────────────────────── -->
+    <div class="tab-panel active" id="tab-live">
+      <div class="live-layout">
+
+        <!-- Left column: controls + chart -->
+        <div>
+          <!-- Connection bar -->
+          <div class="connect-bar">
+            <button class="connect-btn" id="connect-btn" onclick="connectBand()">🔗 Connect Band</button>
+            <button class="connect-btn" id="demo-btn" onclick="startDemo()" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);margin-left:.4rem" title="Simulate band data for testing">🧪 Demo Mode</button>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <div class="status-dot" id="status-dot"></div>
+              <span id="status-text" style="font-size:.84rem;color:var(--text2)">Disconnected</span>
+            </div>
+            <span id="device-name" style="font-size:.78rem;color:var(--text3)"></span>
+          </div>
+          <div id="bt-warning" class="alert alert-err" style="display:none">⚠️ Web Bluetooth requires <strong>Chrome or Edge on desktop</strong> (not Safari or Firefox).</div>
+
+          <!-- Live monitor (shown after connect) -->
+          <div id="live-monitor" style="display:none">
+            <!-- BPM display -->
+            <div class="bpm-wrap">
+              <span class="heart-icon" id="heart-icon">❤️</span>
+              <div class="bpm-number" id="bpm-display">--</div>
+              <div class="bpm-unit">beats per minute</div>
+            </div>
+
+            <!-- Phase pills -->
+            <div class="phase-pills">
+              <div class="phase-pill rest-pill" id="rest-pill">
+                <div class="pill-label">REST</div>
+                <div class="pill-val" id="rest-beat-count">0 beats</div>
+              </div>
+              <div class="phase-pill ex-pill" id="ex-pill">
+                <div class="pill-label">EXERCISE</div>
+                <div class="pill-val" id="ex-beat-count">0 beats</div>
+              </div>
+            </div>
+
+            <!-- Live stats row -->
+            <div class="live-stat-row">
+              <div class="live-stat"><div class="live-stat-val" id="live-total-beats">0</div><div class="live-stat-lbl">Total Beats</div></div>
+              <div class="live-stat"><div class="live-stat-val" id="live-last-rr">--</div><div class="live-stat-lbl">Last RR (ms)</div></div>
+              <div class="live-stat"><div class="live-stat-val" id="live-phase-label">Idle</div><div class="live-stat-lbl">Phase</div></div>
+            </div>
+
+            <!-- Rolling BPM chart -->
+            <div class="live-chart-card">
+              <div class="live-chart-title">
+                <span id="rec-dot-span" style="display:none"><span class="rec-dot"></span></span>
+                Live Heart Rate
+              </div>
+              <canvas id="live-hr-chart" height="130"></canvas>
+            </div>
+
+            <!-- Phase control buttons -->
+            <div class="phase-ctrl" id="phase-ctrl">
+              <button class="phase-btn primary" id="btn-start-rest" onclick="startRest()">▶ Start REST Recording</button>
+              <button class="phase-btn amber"   id="btn-end-rest"   onclick="endRest()"   style="display:none">→ End REST · Start EXERCISE</button>
+              <button class="phase-btn"         id="btn-stop-ex"    onclick="stopRec()"   style="display:none">⏹ Stop Recording</button>
+              <button class="phase-btn danger"  id="btn-discard"    onclick="discardRec()" style="display:none">✕ Discard</button>
+              <button class="phase-btn danger"  id="btn-reset"      onclick="resetAll()"  style="display:none" title="Clear all recorded data and start over">🔄 Reset</button>
+            </div>
+
+            <div class="info-note" id="live-hint" style="margin-top:.7rem">Connect your Polar H10 or any Bluetooth HR band. Record REST (~5 min), then EXERCISE phase.</div>
+          </div><!-- /live-monitor -->
+        </div><!-- /left col -->
+
+        <!-- Right column: result box -->
+        <div class="result-box" id="live-result-box">
+          <div id="live-placeholder">
+            <div class="placeholder-icon">❤️</div>
+            <h3 style="color:var(--text2)">Connect your band to start</h3>
+            <p style="font-size:.85rem;margin-top:.4rem">Real-time HRV recording → 8 muscle volumes</p>
+          </div>
+          <div class="result-content" id="live-result-content">
+            <div class="ey" id="live-result-label"></div>
+            <canvas id="live-pred-chart" height="220"></canvas>
+            <div style="margin-top:1rem">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">HRV Summary</div>
+              <div class="hrv-summary" id="live-hrv-summary"></div>
+            </div>
+            <div style="margin-top:.8rem">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">PC Scores (LME inputs)</div>
+              <div class="pc-grid" id="live-pc-grid"></div>
+            </div>
+            <div class="pred-note" id="live-pred-note"></div>
+          </div>
+          <div id="live-loading" style="display:none;text-align:center">
+            <div class="spinner"></div>
+            <div style="font-size:.82rem;color:var(--text3);margin-top:.5rem">Computing HRV + PCA + LME…</div>
+          </div>
+        </div><!-- /result box -->
+      </div><!-- /live-layout -->
+
+      <!-- BP + Demographics section (revealed after recording stops) -->
+      <div id="live-analyze-section" style="display:none;margin-top:1.4rem">
+        <div class="done-banner">
+          <strong>✓ Recording complete</strong> — <span id="recording-summary"></span>
+        </div>
+        <div class="full-form">
+          <div class="form-section">
+            <div class="form-section-title">💓 Blood Pressure (mmHg)</div>
+            <div class="fg-row">
+              <div class="fg"><label>Resting SBP (pre-exercise)</label><input type="number" id="l-sbp-rest" value="120" min="80" max="200"/></div>
+              <div class="fg"><label>Resting DBP (pre-exercise)</label><input type="number" id="l-dbp-rest" value="78"  min="50" max="130"/></div>
+            </div>
+            <div class="fg-row">
+              <div class="fg"><label>Post-exercise SBP</label><input type="number" id="l-sbp-post" value="145" min="80" max="230"/></div>
+              <div class="fg"><label>Post-exercise DBP</label><input type="number" id="l-dbp-post" value="88"  min="50" max="140"/></div>
+            </div>
+            <div class="fg"><label>Exercise SBP series (comma-separated)</label><textarea id="l-sbp-ex">140, 148, 152, 145</textarea></div>
+            <div class="fg"><label>Exercise DBP series (comma-separated)</label><textarea id="l-dbp-ex">85, 87, 90, 88</textarea></div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">👤 Demographics</div>
+            <div class="fg-row">
+              <div class="fg"><label>Age</label><input type="number" id="l-age" value="25" min="18" max="60"/></div>
+              <div class="fg"><label>BMI</label><input type="number" id="l-bmi" step="0.1" value="23.0" min="15" max="45"/></div>
+            </div>
+            <div class="fg-row">
+              <div class="fg"><label>Gender</label><select id="l-gender"><option value="1">Male</option><option value="0">Female</option></select></div>
+              <div class="fg"><label>Activity Group</label>
+                <select id="l-group">
+                  <option value="G1">G1 — Resistance Training</option>
+                  <option value="G2">G2 — Combined</option>
+                  <option value="G3">G3 — Aerobic</option>
+                  <option value="G4">G4 — Sedentary</option>
+                </select>
+              </div>
+            </div>
+            <div id="live-error" class="alert alert-err" style="display:none"></div>
+            <button class="form-submit" id="live-analyze-btn" onclick="analyzeLive()" style="margin-top:1rem">Analyze Muscle Volumes →</button>
+          </div>
+        </div>
+      </div><!-- /live-analyze-section -->
+    </div><!-- /tab-live -->
+
+    <!-- ── Full CV tab ─────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-full">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+        <div>
+          <form id="full-form" enctype="multipart/form-data">
+
+            <div class="form-section">
+              <div class="form-section-title">📄 RR Interval File</div>
+              <div class="upload-zone" id="upload-zone">
+                <input type="file" name="rr_file" id="rr-file" accept=".txt,.csv,.rr"/>
+                <div class="upload-icon">📂</div>
+                <div style="font-size:.85rem;color:var(--text2)">Click or drag your RR interval file</div>
+                <div style="font-size:.76rem;color:var(--text3);margin-top:.3rem">Polar H10 CSV · plain text (one RR/line in ms)</div>
+                <div class="upload-name" id="file-name" style="display:none"></div>
+              </div>
+              <div class="fg" style="margin-top:.9rem">
+                <label>REST phase — number of beats from start</label>
+                <input type="number" name="rest_beats" id="rest-beats" value="150" min="30" max="1000"/>
+                <div style="font-size:.73rem;color:var(--text3);margin-top:.25rem">Typically 5 min rest ≈ 300–400 beats at rest HR. Default 150.</div>
+              </div>
+            </div>
+
+            <div class="form-section" style="margin-top:1rem">
+              <div class="form-section-title">💓 Blood Pressure (mmHg)</div>
+              <div class="fg-row">
+                <div class="fg"><label>Resting SBP</label><input type="number" name="sbp_rest" value="120" min="80" max="200"/></div>
+                <div class="fg"><label>Resting DBP</label><input type="number" name="dbp_rest" value="78" min="50" max="130"/></div>
+              </div>
+              <div class="fg-row">
+                <div class="fg"><label>Post-exercise SBP</label><input type="number" name="sbp_post" value="145" min="80" max="230"/></div>
+                <div class="fg"><label>Post-exercise DBP</label><input type="number" name="dbp_post" value="88" min="50" max="140"/></div>
+              </div>
+              <div class="fg"><label>Exercise SBP series (comma-separated)</label><textarea name="sbp_ex_series" placeholder="e.g. 140, 148, 152, 145">140, 148, 152, 145</textarea></div>
+              <div class="fg"><label>Exercise DBP series (comma-separated)</label><textarea name="dbp_ex_series" placeholder="e.g. 85, 87, 90, 88">85, 87, 90, 88</textarea></div>
+            </div>
+
+            <div class="form-section" style="margin-top:1rem">
+              <div class="form-section-title">👤 Demographics</div>
+              <div class="fg-row">
+                <div class="fg"><label>Age</label><input type="number" name="age" value="25" min="18" max="60"/></div>
+                <div class="fg"><label>BMI</label><input type="number" name="bmi" step="0.1" value="23.0" min="15" max="45"/></div>
+              </div>
+              <div class="fg-row">
+                <div class="fg"><label>Gender</label><select name="gender"><option value="1">Male</option><option value="0">Female</option></select></div>
+                <div class="fg"><label>Activity Group</label>
+                  <select name="group">
+                    <option value="G1">G1 — Resistance Training</option>
+                    <option value="G2">G2 — Combined</option>
+                    <option value="G3">G3 — Aerobic</option>
+                    <option value="G4">G4 — Sedentary</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="form-submit" id="full-submit">Run Full CV Prediction →</button>
+            <div id="full-error" class="alert alert-err" style="display:none"></div>
+          </form>
+        </div>
+
+        <div class="result-box" id="full-result-box">
+          <div id="full-placeholder">
+            <div class="placeholder-icon">📈</div>
+            <h3 style="color:var(--text2)">Upload RR file to get started</h3>
+            <p style="font-size:.85rem;margin-top:.4rem">Individual cardiovascular profile → 8 muscle volumes</p>
+          </div>
+          <div class="result-content" id="full-result-content">
+            <div class="ey" id="full-result-label"></div>
+            <canvas id="full-pred-chart" height="220"></canvas>
+            <!-- HRV summary -->
+            <div style="margin-top:1rem">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">HRV Summary</div>
+              <div class="hrv-summary" id="hrv-summary"></div>
+            </div>
+            <!-- Key PCs -->
+            <div style="margin-top:.8rem">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:.4rem">PC Scores (used in LME formula)</div>
+              <div class="pc-grid" id="pc-grid"></div>
+            </div>
+            <div class="pred-note" id="full-pred-note"></div>
+          </div>
+          <div id="full-loading" style="display:none;text-align:center">
+            <div class="spinner"></div>
+            <div style="font-size:.82rem;color:var(--text3);margin-top:.5rem">Computing HRV features + PCA projection…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Simple tab ──────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-simple">
+      <div class="pred-grid">
+        <div class="card">
+          <div class="ey">Your Profile</div>
+          <form id="simple-form">
+            <div class="fg-row">
+              <div class="fg"><label>Age</label><input type="number" id="s-age" value="25" min="18" max="60"/></div>
+              <div class="fg"><label>BMI</label><input type="number" id="s-bmi" step="0.1" value="23.0" min="15" max="45"/></div>
+            </div>
+            <div class="fg"><label>Gender</label><select id="s-gender"><option value="1">Male</option><option value="0">Female</option></select></div>
+            <div class="fg"><label>Activity Group</label>
+              <select id="s-group">
+                <option value="G1">G1 — Pure Resistance Training</option>
+                <option value="G2">G2 — Combined (RT + Aerobic)</option>
+                <option value="G3">G3 — Aerobic Only</option>
+                <option value="G4">G4 — Sedentary</option>
+              </select>
+            </div>
+            <div class="info-note">ℹ️ CV signals estimated from your group's average profile. Upload an RR file on the Full CV tab for individualised results.</div>
+            <button type="submit" class="form-submit">Estimate Muscle Volumes →</button>
+          </form>
+        </div>
+        <div class="result-box" id="simple-result-box">
+          <div id="simple-placeholder">
+            <div class="placeholder-icon">📊</div>
+            <h3 style="color:var(--text2)">Prediction will appear here</h3>
+          </div>
+          <div class="result-content" id="simple-result-content">
+            <div class="ey" id="simple-result-label"></div>
+            <canvas id="simple-pred-chart" height="250"></canvas>
+            <div class="pred-note" id="simple-pred-note"></div>
+          </div>
+          <div id="simple-loading" style="display:none;text-align:center"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── Study Results ──────────────────────────────────────────────────────── -->
+<div class="sec" id="results">
+  <div class="sec-hd fade">
+    <div class="ey">Study Results</div>
+    <h2>Test Set Predictions</h2>
+    <p>LME, MERF, and GPBoost predictions vs actual volumes for 16 held-out participants.</p>
+  </div>
+  <div class="grid2 fade">
+    <div class="chart-wrap"><div class="chart-title">Actual vs Predicted — LME Model</div><canvas id="scatter-chart" height="250"></canvas></div>
+    <div class="chart-wrap"><div class="chart-title">Average Volume by Muscle</div><canvas id="muscle-group-chart" height="250"></canvas></div>
+  </div>
+  <div style="margin-top:1.4rem" class="fade">
+    <div class="chart-wrap">
+      <div class="chart-title">Test Predictions Table</div>
+      <div class="tbl-wrap" style="margin-top:.9rem">
+        <table><thead><tr><th>Participant</th><th>Group</th><th>Muscle</th><th>Actual (cm³)</th><th>LME</th><th>MERF</th><th>GPBoost</th></tr></thead>
+        <tbody id="pred-table-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── Model Performance ──────────────────────────────────────────────────── -->
+<div class="sec" id="performance">
+  <div class="sec-hd fade">
+    <div class="ey">Model Comparison</div>
+    <h2>LME vs MERF vs GPBoost vs Ensemble</h2>
+  </div>
+  <div class="grid2 fade">
+    <div class="chart-wrap"><div class="chart-title">RMSE per Muscle — LME</div><div class="chart-sub">Lower is better · cm³</div><canvas id="rmse-muscle-chart" height="250"></canvas></div>
+    <div class="chart-wrap"><div class="chart-title">Overall RMSE by Model</div><div class="chart-sub">Lower is better · cm³</div><canvas id="rmse-model-chart" height="250"></canvas></div>
+  </div>
+  <div style="margin-top:1.4rem" class="fade">
+    <div class="chart-wrap">
+      <div class="chart-title">Performance Summary</div>
+      <div class="tbl-wrap" style="margin-top:.9rem">
+        <table><thead><tr><th>Model</th><th>RMSE↓</th><th>R²↑</th><th>CCC↑</th><th>F1↑</th><th>Rank ρ↑</th><th>R²within↑</th></tr></thead>
+        <tbody id="perf-table-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── About ──────────────────────────────────────────────────────────────── -->
+<div class="sec" id="about">
+  <div class="sec-hd fade"><div class="ey">About</div><h2>HRVBP-HyperNet Framework</h2></div>
+  <div class="grid2 fade">
+    <div class="card"><h3 style="margin-bottom:.7rem">🏛️ University of Ruhuna — EG/2021</h3><p style="font-size:.85rem">Balasooriya J.M. · Bandara K.M.T.O.N. · Bandara L.R.T.D. · Bulegodaarachchi D.C.</p></div>
+    <div class="card"><h3 style="margin-bottom:.7rem">🧠 RST-UNet V2 Architecture</h3><p style="font-size:.85rem">Residual Shrinkage Blocks · MAM skip connections · Parallel Transformer Stream · FiLM conditioning. Dice=<strong style="color:var(--accent)">0.7983</strong>.</p></div>
+    <div class="card"><h3 style="margin-bottom:.7rem">📡 Input Devices</h3><p style="font-size:.85rem"><strong style="color:var(--text)">Polar H10</strong> chest strap — RR intervals · <strong style="color:var(--text)">OMRON HEM-7121</strong> — systolic / diastolic BP across rest, exercise, recovery phases.</p></div>
+    <div class="card"><h3 style="margin-bottom:.7rem">🎯 Key Finding</h3><p style="font-size:.85rem">HR_PC9 (β=−0.116, p&lt;0.01) and Gender_bin (β=0.621, p&lt;0.001) are the strongest predictors. LF/HF, DFA α₁, SD1/SD2 geometry carry detectable muscle-volume signal.</p></div>
+  </div>
+</div>
+
+<footer style="background:var(--surface);border-top:1px solid var(--border);padding:2rem 2rem;text-align:center;color:var(--text3);font-size:.83rem">
+  <p><strong style="color:var(--text2)">HRVBP-HyperNet</strong> — University of Ruhuna · EG/2021 Final Year Project</p>
+</footer>
+
+<script>
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#1e2d50';
+Chart.defaults.font.family = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+const TEAL='#00d2aa', AMBER='#f59e0b', PURPLE='#8b5cf6', CORAL='#f87171';
+
+// ── Scroll fade ───────────────────────────────────────────────────────────────
+// Make all sections visible immediately; animate in as they enter viewport
+document.querySelectorAll('.fade').forEach(function(el){ el.classList.add('in'); });
+if(typeof IntersectionObserver !== 'undefined'){
+  const _fadeObs = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('in'); });
+  }, {threshold:.1});
+  document.querySelectorAll('.fade').forEach(function(el){ _fadeObs.observe(el); });
+}
+
+// ── Tab switch ────────────────────────────────────────────────────────────────
+const TAB_NAMES = ['live','full','simple'];
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', TAB_NAMES[i] === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-'+tab));
+}
+
+// ── Web Bluetooth — Live Band ─────────────────────────────────────────────────
+let btDevice = null, btChar = null, userWantsConnected = false;
+let liveHrChart = null, livePredChart = null;
+let rrBuffer = [];
+let restBeats = 0;
+let recordingPhase = 'idle'; // idle | rest | exercise | done
+
+// Check browser support
+(function() {
+  if (!navigator.bluetooth) {
+    document.getElementById('bt-warning').style.display = 'block';
+    document.getElementById('connect-btn').disabled = true;
+  }
+})();
+
+// ── Demo / Simulation mode ────────────────────────────────────────────────────
+let _demoTimer = null;
+function startDemo() {
+  document.getElementById('demo-btn').textContent = '🧪 Demo Running';
+  document.getElementById('demo-btn').disabled = true;
+  document.getElementById('connect-btn').disabled = true;
+  document.getElementById('status-dot').className = 'status-dot connected';
+  document.getElementById('status-text').textContent = 'Simulated Band';
+  document.getElementById('device-name').textContent = '';
+  document.getElementById('live-monitor').style.display = 'block';
+  if (liveHrChart) liveHrChart.destroy();
+  liveHrChart = new Chart(document.getElementById('live-hr-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels:[], datasets:[{ label:'BPM', data:[], borderColor:CORAL, backgroundColor:CORAL+'22', fill:true, tension:0.35, pointRadius:0, borderWidth:2 }]},
+    options:{ responsive:true, animation:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{min:40,max:200,title:{display:true,text:'BPM'},ticks:{stepSize:40}}} }
+  });
+  // Simulate HR notifications every ~850 ms (avg ~70 bpm at rest)
+  let tick = 0;
+  _demoTimer = setInterval(() => {
+    // Phase-aware BPM: rest=55-75, exercise=110-150
+    const isEx = recordingPhase === 'exercise';
+    const baseBpm = isEx ? 130 : 62;
+    const noise = (Math.random() - 0.5) * (isEx ? 20 : 12);
+    const bpm = Math.round(baseBpm + noise + Math.sin(tick * 0.15) * 5);
+    const rr = Math.round(60000 / bpm);  // ms
+    // Build a fake DataView matching the HR characteristic format
+    const buf = new ArrayBuffer(3);
+    const dv  = new DataView(buf);
+    dv.setUint8(0, 0x10);        // flags: HR8, RR present
+    dv.setUint8(1, bpm & 0xff);  // HR value (8-bit)
+    dv.setUint16(2, Math.round(rr * 1024 / 1000), true);  // RR in 1/1024 s, little-endian
+    handleHrNotification({ target: { value: dv } });
+    tick++;
+  }, 850);
+  document.getElementById('live-hint').textContent = 'Demo mode — simulated HR data. Use the phase buttons to record, then Analyze.';
+}
+function stopDemo() {
+  if (_demoTimer) { clearInterval(_demoTimer); _demoTimer = null; }
+  document.getElementById('demo-btn').textContent = '🧪 Demo Mode';
+  document.getElementById('demo-btn').disabled = false;
+  document.getElementById('connect-btn').disabled = false;
+}
+
+async function _getHrChar(device, retries = 8, initialDelay = 0) {
+  let lastErr;
+  if (initialDelay) await new Promise(r => setTimeout(r, initialDelay));
+  for (let i = 0; i < retries; i++) {
+    try {
+      if (i > 0) await new Promise(r => setTimeout(r, 1500 * i));
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService('heart_rate');
+      return await service.getCharacteristic('heart_rate_measurement');
+    } catch (e) {
+      lastErr = e;
+      console.warn(`BT attempt ${i+1}: ${e.message}`);
+    }
+  }
+  throw lastErr;
+}
+
+async function connectBand() {
+  if (!navigator.bluetooth) return;
+  const btn = document.getElementById('connect-btn');
+  btn.textContent = '⏳ Connecting…'; btn.disabled = true;
+  try {
+    btDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'Polar' }, { services: ['heart_rate'] }],
+      optionalServices: ['heart_rate', '0000180d-0000-1000-8000-00805f9b34fb']
+    });
+    btDevice.addEventListener('gattserverdisconnected', onBtDisconnected);
+    btChar = await _getHrChar(btDevice);
+    await btChar.startNotifications();
+    btChar.addEventListener('characteristicvaluechanged', handleHrNotification);
+    userWantsConnected = true;
+    onBtConnected();
+  } catch(err) {
+    userWantsConnected = false;
+    btn.textContent = '🔗 Connect Band'; btn.disabled = false;
+    if (err.name !== 'NotFoundError') console.error('BT:', err);
+  }
+}
+
+function onBtConnected() {
+  const btn = document.getElementById('connect-btn');
+  btn.textContent = '✓ Connected';
+  btn.style.background = '#22c55e'; btn.style.color = '#000';
+  document.getElementById('status-dot').className = 'status-dot connected';
+  document.getElementById('status-text').textContent = btDevice.name || 'Heart Rate Band';
+  document.getElementById('device-name').textContent = '';
+  document.getElementById('live-monitor').style.display = 'block';
+
+  // Init rolling BPM chart
+  if (liveHrChart) liveHrChart.destroy();
+  liveHrChart = new Chart(document.getElementById('live-hr-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels:[], datasets:[{
+      label:'BPM', data:[], borderColor:CORAL, backgroundColor:CORAL+'22',
+      fill:true, tension:0.35, pointRadius:0, borderWidth:2
+    }]},
+    options:{
+      responsive:true, animation:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{display:false},
+        y:{min:40,max:200,title:{display:true,text:'BPM'},ticks:{stepSize:40}}
+      }
+    }
+  });
+}
+
+function onBtDisconnected() {
+  const btn = document.getElementById('connect-btn');
+
+  if (!userWantsConnected || !btDevice) {
+    document.getElementById('status-dot').className = 'status-dot';
+    document.getElementById('bpm-display').textContent = '--';
+    document.getElementById('bpm-display').style.color = 'var(--coral)';
+    btn.textContent = '🔗 Connect Band'; btn.disabled = false;
+    btn.style.background = ''; btn.style.color = '';
+    document.getElementById('status-text').textContent = 'Disconnected';
+    return;
+  }
+
+  // Seamless reconnect — wait 2s for H10 to start advertising, then retry
+  document.getElementById('status-dot').className = 'status-dot';
+  document.getElementById('status-text').textContent = '↻ Reconnecting…';
+
+  _getHrChar(btDevice, 8, 2000).then(char => {
+    btChar = char;
+    btChar.addEventListener('characteristicvaluechanged', handleHrNotification);
+    return btChar.startNotifications();
+  }).then(() => {
+    btn.style.background = '#22c55e'; btn.style.color = '#000';
+    document.getElementById('status-dot').className = 'status-dot connected';
+    document.getElementById('status-text').textContent = btDevice.name || 'Heart Rate Band';
+  }).catch(async () => {
+    // Reconnect failed — Windows GATT cache is stale. Clear device and prompt re-pair.
+    userWantsConnected = false;
+    if (btDevice && btDevice.forget) { try { await btDevice.forget(); } catch(_){} }
+    btDevice = null; btChar = null;
+    document.getElementById('bpm-display').textContent = '--';
+    document.getElementById('bpm-display').style.color = 'var(--coral)';
+    btn.textContent = '🔗 Connect Band'; btn.disabled = false;
+    btn.style.background = ''; btn.style.color = '';
+    document.getElementById('status-dot').className = 'status-dot';
+    document.getElementById('status-text').textContent = '';
+    document.getElementById('live-hint').innerHTML =
+      '⚠️ Connection lost. <b>Remove "Polar H10" from Windows Bluetooth settings</b>, then click Connect Band to re-pair.';
+  });
+}
+
+function handleHrNotification(event) {
+  const v = event.target.value;
+  const flags = v.getUint8(0);
+  const hr16   = (flags & 0x01) !== 0;
+  const hasEE  = (flags & 0x08) !== 0;
+  const hasRR  = (flags & 0x10) !== 0;
+
+  let off = 1;
+  const bpm = hr16 ? v.getUint16(off, true) : v.getUint8(off);
+  off += hr16 ? 2 : 1;
+  if (hasEE) off += 2;
+
+  // Update BPM display
+  const bpmEl = document.getElementById('bpm-display');
+  bpmEl.textContent = bpm;
+  bpmEl.style.color = bpm < 60 ? 'var(--purple)' : bpm > 140 ? 'var(--coral)' : 'var(--accent)';
+
+  // Pulse heart
+  const heart = document.getElementById('heart-icon');
+  heart.classList.remove('pulse'); void heart.offsetWidth; heart.classList.add('pulse');
+
+  // Rolling chart update (last 60 readings)
+  if (liveHrChart) {
+    if (liveHrChart.data.labels.length >= 60) {
+      liveHrChart.data.labels.shift();
+      liveHrChart.data.datasets[0].data.shift();
+    }
+    liveHrChart.data.labels.push('');
+    liveHrChart.data.datasets[0].data.push(bpm);
+    liveHrChart.update('none');
+  }
+
+  // Parse and store RR intervals (unit: 1/1024 s → ms)
+  if (hasRR && recordingPhase !== 'idle') {
+    while (off + 1 < v.byteLength) {
+      const rrRaw = v.getUint16(off, true); off += 2;
+      const rrMs  = Math.round(rrRaw * 1000 / 1024);
+      if (rrMs >= 300 && rrMs <= 2000) {
+        rrBuffer.push(rrMs);
+        document.getElementById('live-last-rr').textContent = rrMs;
+        updateLiveStats();
+      }
+    }
+  }
+}
+
+function updateLiveStats() {
+  const total  = rrBuffer.length;
+  const exCnt  = Math.max(0, total - restBeats);
+  document.getElementById('live-total-beats').textContent = total;
+  document.getElementById('rest-beat-count').textContent  = Math.min(total, restBeats > 0 ? restBeats : total) + ' beats';
+  document.getElementById('ex-beat-count').textContent    = (restBeats > 0 ? exCnt : 0) + ' beats';
+}
+
+function resetAll() {
+  stopDemo();
+  userWantsConnected = false;
+  rrBuffer = []; restBeats = 0; recordingPhase = 'idle';
+
+  // Reset phase pills
+  document.getElementById('rest-pill').classList.remove('active');
+  document.getElementById('ex-pill').classList.remove('active');
+
+  // Reset status dot and recording indicator
+  document.getElementById('status-dot').className = 'status-dot connected';
+  document.getElementById('rec-dot-span').style.display = 'none';
+
+  // Reset beat counters and stats
+  document.getElementById('rest-beat-count').textContent  = '0 beats';
+  document.getElementById('ex-beat-count').textContent    = '0 beats';
+  document.getElementById('live-total-beats').textContent = '0';
+  document.getElementById('live-last-rr').textContent     = '--';
+  document.getElementById('live-phase-label').textContent = 'Idle';
+
+  // Reset buttons — show Start REST, hide everything else
+  document.getElementById('btn-start-rest').style.display = '';
+  document.getElementById('btn-end-rest').style.display   = 'none';
+  document.getElementById('btn-stop-ex').style.display    = 'none';
+  document.getElementById('btn-discard').style.display    = 'none';
+  document.getElementById('btn-reset').style.display      = 'none';
+
+  // Hide analyze section and result, restore placeholder
+  document.getElementById('live-analyze-section').style.display = 'none';
+  document.getElementById('live-result-content').style.display = 'none';
+  document.getElementById('live-loading').style.display = 'none';
+  document.getElementById('live-placeholder').style.display = '';
+  document.getElementById('live-error').style.display = 'none';
+
+  // Clear the live chart data
+  if (liveHrChart) {
+    liveHrChart.data.labels = [];
+    liveHrChart.data.datasets[0].data = [];
+    liveHrChart.update('none');
+  }
+
+  document.getElementById('live-hint').textContent = 'Connect your Polar H10 or any Bluetooth HR band. Record REST (~5 min), then EXERCISE phase.';
+}
+
+function startRest() {
+  rrBuffer = []; restBeats = 0; recordingPhase = 'rest';
+  document.getElementById('rest-pill').classList.add('active');
+  document.getElementById('ex-pill').classList.remove('active');
+  document.getElementById('live-phase-label').textContent = 'REST';
+  document.getElementById('status-dot').className = 'status-dot recording';
+  document.getElementById('rec-dot-span').style.display = '';
+  document.getElementById('btn-start-rest').style.display = 'none';
+  document.getElementById('btn-end-rest').style.display   = '';
+  document.getElementById('btn-discard').style.display    = '';
+  document.getElementById('btn-reset').style.display      = '';
+  document.getElementById('live-hint').textContent = 'Recording REST phase. Stay at rest for 3–5 minutes, then switch to exercise.';
+}
+
+function endRest() {
+  restBeats = rrBuffer.length; recordingPhase = 'exercise';
+  document.getElementById('rest-pill').classList.remove('active');
+  document.getElementById('ex-pill').classList.add('active');
+  document.getElementById('live-phase-label').textContent = 'EXERCISE';
+  document.getElementById('btn-end-rest').style.display  = 'none';
+  document.getElementById('btn-stop-ex').style.display   = '';
+  document.getElementById('btn-reset').style.display     = '';
+  document.getElementById('live-hint').textContent = 'REST locked (' + restBeats + ' beats). Now recording EXERCISE phase.';
+}
+
+function stopRec() {
+  recordingPhase = 'done';
+  document.getElementById('status-dot').className = 'status-dot connected';
+  document.getElementById('rec-dot-span').style.display = 'none';
+  document.getElementById('rest-pill').classList.remove('active');
+  document.getElementById('ex-pill').classList.remove('active');
+  document.getElementById('btn-stop-ex').style.display  = 'none';
+  document.getElementById('btn-discard').style.display  = 'none';
+  document.getElementById('btn-reset').style.display    = '';
+  document.getElementById('live-phase-label').textContent = 'Done';
+  const exCnt = rrBuffer.length - restBeats;
+  document.getElementById('recording-summary').textContent =
+    'REST: ' + restBeats + ' beats · EXERCISE: ' + exCnt + ' beats · Total: ' + rrBuffer.length + ' RR intervals';
+  document.getElementById('live-analyze-section').style.display = 'block';
+  document.getElementById('live-analyze-section').scrollIntoView({behavior:'smooth'});
+  document.getElementById('live-hint').textContent = 'Recording complete. Enter BP readings below and click Analyze.';
+}
+
+function discardRec() {
+  rrBuffer = []; restBeats = 0; recordingPhase = 'idle';
+  document.getElementById('rest-pill').classList.remove('active');
+  document.getElementById('ex-pill').classList.remove('active');
+  document.getElementById('status-dot').className = 'status-dot connected';
+  document.getElementById('rec-dot-span').style.display = 'none';
+  document.getElementById('rest-beat-count').textContent = '0 beats';
+  document.getElementById('ex-beat-count').textContent   = '0 beats';
+  document.getElementById('live-total-beats').textContent = '0';
+  document.getElementById('live-last-rr').textContent    = '--';
+  document.getElementById('live-phase-label').textContent = 'Idle';
+  document.getElementById('btn-start-rest').style.display = '';
+  document.getElementById('btn-end-rest').style.display   = 'none';
+  document.getElementById('btn-stop-ex').style.display    = 'none';
+  document.getElementById('btn-discard').style.display    = 'none';
+  document.getElementById('live-analyze-section').style.display = 'none';
+  document.getElementById('live-hint').textContent = 'Connect your Polar H10 or any Bluetooth HR band. Record REST (~5 min), then EXERCISE phase.';
+}
+
+async function analyzeLive() {
+  if (rrBuffer.length < 60) {
+    document.getElementById('live-error').textContent = 'Need at least 60 RR intervals. Record more data first.';
+    document.getElementById('live-error').style.display = 'block'; return;
+  }
+  const btn = document.getElementById('live-analyze-btn');
+  btn.disabled = true; btn.textContent = 'Analyzing…';
+  document.getElementById('live-error').style.display = 'none';
+  showEl('live-placeholder', false);
+  document.getElementById('live-result-content').style.display = 'none';
+  showLoading('live-loading', true);
+
+  const parseSeries = id => document.getElementById(id).value
+    .split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+  try {
+    const res = await fetch('/api/predict-live', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        rr_intervals:   rrBuffer,
+        rest_beats:     restBeats,
+        age:    parseFloat(document.getElementById('l-age').value),
+        bmi:    parseFloat(document.getElementById('l-bmi').value),
+        gender: parseInt(document.getElementById('l-gender').value),
+        group:  document.getElementById('l-group').value,
+        sbp_rest: parseFloat(document.getElementById('l-sbp-rest').value),
+        dbp_rest: parseFloat(document.getElementById('l-dbp-rest').value),
+        sbp_post: parseFloat(document.getElementById('l-sbp-post').value),
+        dbp_post: parseFloat(document.getElementById('l-dbp-post').value),
+        sbp_ex_series: parseSeries('l-sbp-ex'),
+        dbp_ex_series: parseSeries('l-dbp-ex'),
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      document.getElementById('live-error').textContent = data.error || 'Prediction failed.';
+      document.getElementById('live-error').style.display = 'block';
+      showEl('live-placeholder', true); return;
+    }
+    renderLiveResult(data);
+  } catch(err) {
+    document.getElementById('live-error').textContent = 'Network error: ' + err.message;
+    document.getElementById('live-error').style.display = 'block';
+    showEl('live-placeholder', true);
+  } finally {
+    showLoading('live-loading', false);
+    btn.disabled = false; btn.textContent = 'Analyze Muscle Volumes →';
+  }
+}
+
+function renderLiveResult(data) {
+  document.getElementById('live-result-content').style.display = 'block';
+  document.getElementById('live-result-label').textContent = 'Live Recording — ' + data.group_label;
+  const muscles = Object.keys(data.predictions);
+  const preds   = muscles.map(m => data.predictions[m].volume_cm3);
+  const avgs    = muscles.map(m => data.group_avgs[m]);
+  if (livePredChart) livePredChart.destroy();
+  livePredChart = new Chart(document.getElementById('live-pred-chart').getContext('2d'), {
+    type:'bar',
+    data:{ labels:muscles, datasets:[
+      {label:'Your Volume (cm³)', data:preds, backgroundColor:TEAL+'cc', borderRadius:5},
+      {label:'Group Avg (cm³)',   data:avgs,  backgroundColor:AMBER+'55', borderColor:AMBER, borderWidth:1, borderRadius:5},
+    ]},
+    options:{responsive:true,
+      plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw?.toFixed(1)||'N/A'} cm³`}}},
+      scales:{y:{title:{display:true,text:'Volume (cm³)'},min:0}}}
+  });
+  const hs = data.hrv_summary;
+  document.getElementById('live-hrv-summary').innerHTML = [
+    ['REST RMSSD', hs.REST_RMSSD_ms + ' ms'], ['REST HR', hs.REST_Mean_HR_bpm + ' bpm'],
+    ['EX RMSSD',  hs.EX_RMSSD_ms   + ' ms'], ['EX HR',   hs.EX_Mean_HR_bpm  + ' bpm'],
+    ['LF/HF (EX)', hs.EX_LF_HF_ratio],        ['DFA α₁', hs.REST_DFA_alpha1],
+  ].map(([l,v]) => `<div class="hrv-card"><div class="hrv-val">${v}</div><div class="hrv-lbl">${l}</div></div>`).join('');
+  document.getElementById('live-pc-grid').innerHTML = Object.entries(data.key_pcs).map(([k,v]) => {
+    const cls = v >= 0 ? 'pos' : 'neg';
+    return `<div class="pc-chip"><div class="pc-name">${k}</div><div class="pc-val ${cls}">${v>0?'+':''}${v}</div></div>`;
+  }).join('');
+  document.getElementById('live-pred-note').textContent = data.note;
+  document.getElementById('btn-reset').style.display = '';
+  document.getElementById('live-result-box').scrollIntoView({behavior:'smooth'});
+}
+
+// ── File upload ───────────────────────────────────────────────────────────────
+document.getElementById('rr-file').addEventListener('change', function(){
+  const name = this.files[0]?.name;
+  const el = document.getElementById('file-name');
+  if(name){el.textContent = '✓ ' + name; el.style.display='block';}
+});
+const uz = document.getElementById('upload-zone');
+uz.addEventListener('dragover', e => {e.preventDefault(); uz.classList.add('dragover');});
+uz.addEventListener('dragleave', () => uz.classList.remove('dragover'));
+uz.addEventListener('drop', e => {
+  e.preventDefault(); uz.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if(f){ document.getElementById('rr-file').files = e.dataTransfer.files;
+    document.getElementById('file-name').textContent = '✓ ' + f.name;
+    document.getElementById('file-name').style.display='block'; }
+});
+
+// ── Chart helpers ─────────────────────────────────────────────────────────────
+let fullPredChart = null, simplePredChart = null;
+
+function showLoading(id, val) {
+  document.getElementById(id).style.display = val ? 'block' : 'none';
+}
+function showEl(id, val) {
+  document.getElementById(id).style.display = val ? '' : 'none';
+}
+
+// ── Full CV form submit ───────────────────────────────────────────────────────
+document.getElementById('full-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('full-submit');
+  const errEl = document.getElementById('full-error');
+  errEl.style.display = 'none';
+  showEl('full-placeholder', false);
+  document.getElementById('full-result-content').style.display = 'none';
+  showLoading('full-loading', true);
+  btn.disabled = true;
+
+  try {
+    const fd = new FormData(document.getElementById('full-form'));
+    const res = await fetch('/api/predict-full', {method:'POST', body:fd});
+    const data = await res.json();
+
+    if(!res.ok || data.error){
+      errEl.textContent = data.error || 'Prediction failed.';
+      errEl.style.display = 'block';
+      showEl('full-placeholder', true);
+      return;
+    }
+    renderFullResult(data);
+  } catch(err){
+    errEl.textContent = 'Network error: ' + err.message;
+    errEl.style.display = 'block';
+    showEl('full-placeholder', true);
+  } finally {
+    showLoading('full-loading', false);
+    btn.disabled = false;
+  }
+});
+
+function renderFullResult(data) {
+  document.getElementById('full-result-content').style.display = 'block';
+  document.getElementById('full-result-label').textContent =
+    `Individual Prediction — ${data.group_label}`;
+
+  const muscles = Object.keys(data.predictions);
+  const preds   = muscles.map(m => data.predictions[m].volume_cm3);
+  const avgs    = muscles.map(m => data.group_avgs[m]);
+
+  if(fullPredChart) fullPredChart.destroy();
+  fullPredChart = new Chart(document.getElementById('full-pred-chart').getContext('2d'), {
+    type:'bar',
+    data:{
+      labels: muscles,
+      datasets:[
+        {label:'Your Volume (cm³)', data:preds, backgroundColor:TEAL+'cc', borderRadius:5},
+        {label:'Group Avg (cm³)',   data:avgs,  backgroundColor:AMBER+'55', borderColor:AMBER, borderWidth:1, borderRadius:5},
+      ]
+    },
+    options:{responsive:true, plugins:{legend:{position:'top'},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw?.toFixed(1)||'N/A'} cm³`}}},
+      scales:{y:{title:{display:true,text:'Volume (cm³)'},min:0}}
+    }
+  });
+
+  // HRV summary cards
+  const hs = data.hrv_summary;
+  const hsvEl = document.getElementById('hrv-summary');
+  hsvEl.innerHTML = [
+    ['REST RMSSD', hs.REST_RMSSD_ms + ' ms'],
+    ['REST HR', hs.REST_Mean_HR_bpm + ' bpm'],
+    ['EX RMSSD', hs.EX_RMSSD_ms + ' ms'],
+    ['EX HR', hs.EX_Mean_HR_bpm + ' bpm'],
+    ['LF/HF (EX)', hs.EX_LF_HF_ratio],
+    ['DFA α₁', hs.REST_DFA_alpha1],
+  ].map(([l,v]) => `
+    <div class="hrv-card">
+      <div class="hrv-val">${v}</div>
+      <div class="hrv-lbl">${l}</div>
+    </div>`).join('');
+
+  // PC scores grid
+  const pcs = data.key_pcs;
+  document.getElementById('pc-grid').innerHTML = Object.entries(pcs).map(([k,v]) => {
+    const cls = v >= 0 ? 'pos' : 'neg';
+    return `<div class="pc-chip"><div class="pc-name">${k}</div><div class="pc-val ${cls}">${v > 0 ? '+' : ''}${v}</div></div>`;
+  }).join('');
+
+  document.getElementById('full-pred-note').textContent = data.note;
+}
+
+// ── Simple form submit ────────────────────────────────────────────────────────
+document.getElementById('simple-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  showEl('simple-placeholder', false);
+  document.getElementById('simple-result-content').style.display = 'none';
+  showLoading('simple-loading', true);
+  try {
+    const res = await fetch('/api/predict', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        age:    parseFloat(document.getElementById('s-age').value),
+        bmi:    parseFloat(document.getElementById('s-bmi').value),
+        gender: parseInt(document.getElementById('s-gender').value),
+        group:  document.getElementById('s-group').value,
+      })
+    });
+    const data = await res.json();
+    renderSimpleResult(data);
+  } catch(err) {
+    showEl('simple-placeholder', true);
+  } finally {
+    showLoading('simple-loading', false);
+  }
+});
+
+function renderSimpleResult(data) {
+  document.getElementById('simple-result-content').style.display = 'block';
+  document.getElementById('simple-result-label').textContent =
+    `Group Estimate — ${data.group_label}`;
+  const muscles = Object.keys(data.predictions);
+  if(simplePredChart) simplePredChart.destroy();
+  simplePredChart = new Chart(document.getElementById('simple-pred-chart').getContext('2d'), {
+    type:'bar',
+    data:{labels:muscles,datasets:[
+      {label:'Predicted (cm³)', data:muscles.map(m=>data.predictions[m].volume_cm3), backgroundColor:TEAL+'cc', borderRadius:5},
+      {label:'Group Avg (cm³)', data:muscles.map(m=>data.group_avgs[m]), backgroundColor:AMBER+'55', borderColor:AMBER, borderWidth:1, borderRadius:5},
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},
+      scales:{y:{title:{display:true,text:'Volume (cm³)'},min:0}}}
+  });
+  document.getElementById('simple-pred-note').textContent = data.note;
+}
+
+// ── Study results charts ──────────────────────────────────────────────────────
+async function initScatter() {
+  const rows = await fetch('/api/test-predictions').then(r=>r.json());
+  new Chart(document.getElementById('scatter-chart').getContext('2d'), {
+    type:'scatter',
+    data:{datasets:[
+      {label:'LME',      data:rows.map(r=>({x:r.actual,y:r.pred_lme})),    backgroundColor:TEAL+'99',   pointRadius:5},
+      {label:'MERF',     data:rows.map(r=>({x:r.actual,y:r.pred_merf})),   backgroundColor:AMBER+'99',  pointRadius:5},
+      {label:'GPBoost',  data:rows.map(r=>({x:r.actual,y:r.pred_gpboost})),backgroundColor:PURPLE+'99', pointRadius:5},
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},
+      scales:{x:{title:{display:true,text:'Actual (cm³)'},min:10,max:200},
+               y:{title:{display:true,text:'Predicted (cm³)'},min:10,max:200}}}
+  });
+
+  document.getElementById('pred-table-body').innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.participant}</td>
+      <td><span class="badge ${r.group}">${r.group}</span></td>
+      <td>${r.muscle} <small style="color:var(--text3)">${r.label}</small></td>
+      <td>${r.actual}</td>
+      <td style="color:var(--accent)">${r.pred_lme}</td>
+      <td>${r.pred_merf}</td>
+      <td>${r.pred_gpboost}</td>
+    </tr>`).join('');
+}
+
+async function initMuscleChart() {
+  const data = await fetch('/api/muscle-averages').then(r=>r.json());
+  new Chart(document.getElementById('muscle-group-chart').getContext('2d'), {
+    type:'bar',
+    data:{labels:data.map(d=>d.muscle),datasets:[{
+      label:'Mean Volume (cm³)',
+      data:data.map(d=>d.mean),
+      backgroundColor:data.map(d=>({Fusiform:TEAL,Pennate:AMBER,Unipennate:PURPLE,Strap:CORAL}[d.shape]+'cc')||TEAL+'cc'),
+      borderRadius:5,
+    }]},
+    options:{responsive:true,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.raw.toFixed(1)} cm³`}}},
+      scales:{y:{title:{display:true,text:'Volume (cm³)'}}}}
+  });
+}
+
+async function initRmseCharts() {
+  const data = await fetch('/api/rmse-per-muscle').then(r=>r.json());
+  const muscles = Object.keys(data['LME']);
+  new Chart(document.getElementById('rmse-muscle-chart').getContext('2d'), {
+    type:'bar', data:{labels:muscles,datasets:[{label:'LME RMSE',data:muscles.map(m=>data['LME'][m]),backgroundColor:TEAL+'cc',borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'RMSE (cm³)'}}}}
+  });
+
+  const mp = await fetch('/api/model-performance').then(r=>r.json());
+  new Chart(document.getElementById('rmse-model-chart').getContext('2d'), {
+    type:'bar', data:{labels:mp.map(r=>r.model),datasets:[{label:'RMSE',data:mp.map(r=>r.rmse),backgroundColor:[TEAL,AMBER,PURPLE,CORAL].map(c=>c+'cc'),borderRadius:5}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'RMSE (cm³)'},min:30}}}
+  });
+
+  const best={rmse:Math.min(...mp.map(r=>r.rmse)),r2:Math.max(...mp.map(r=>r.r2)),ccc:Math.max(...mp.map(r=>r.ccc)),f1:Math.max(...mp.map(r=>r.f1)),rank_rho:Math.max(...mp.map(r=>r.rank_rho)),r2_within:Math.max(...mp.map(r=>r.r2_within))};
+  document.getElementById('perf-table-body').innerHTML = mp.map(r=>`
+    <tr>
+      <td><strong>${r.model}</strong></td>
+      ${['rmse','r2','ccc','f1','rank_rho','r2_within'].map(k=>{
+        const isBest = k==='rmse' ? r[k]===best[k] : r[k]===best[k];
+        return `<td>${isBest ? `<span class="badge best">${r[k]}</span>` : r[k]}</td>`;
+      }).join('')}
+    </tr>`).join('');
+}
+
+(async () => {
+  await Promise.all([initScatter(), initMuscleChart(), initRmseCharts()]);
+})();
+</script>
+</body>
+</html>

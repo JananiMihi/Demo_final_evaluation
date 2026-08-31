@@ -1,0 +1,21 @@
+[
+  "SBP_rest_pre_mmHg",
+  "DBP_rest_pre_mmHg",
+  "MAP_rest_pre_mmHg",
+  "PP_rest_pre_mmHg",
+  "SBP_post_set_mmHg",
+  "DBP_post_set_mmHg",
+  "MAP_post_set_mmHg",
+  "delta_SBP_mmHg",
+  "SBP_mean_e",
+  "DBP_mean_e",
+  "MAP_e",
+  "Delta_SBP_e",
+  "Delta_DBP_e",
+  "ARV_SBP_mmHg",
+  "SV_SBP_mmHg",
+  "ARV_DBP_mmHg",
+  "SV_DBP_mmHg",
+  "VIM_SBP_mmHg",
+  "VIM_DBP_mmHg"
+]

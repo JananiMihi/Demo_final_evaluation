@@ -1,0 +1,17 @@
+{
+  "M9_ensemble_gain_pct": 0.0,
+  "M9_delta_rmse_cm3": 0.0,
+  "M10_delta_R2_RE": 0.0025,
+  "M11_missingness_gamma": 0.0338,
+  "M11_rmse_by_rate": {
+    "0": 37.075,
+    "10": 37.012,
+    "20": 37.595,
+    "30": 37.43,
+    "40": 38.558
+  },
+  "ensemble_weights": {
+    "MERF": 1.0,
+    "GPBoost": 0.0
+  }
+}

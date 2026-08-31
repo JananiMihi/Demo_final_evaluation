@@ -1,0 +1,8 @@
+Muscle,H_stat,p_value,Significant
+BB,10.387,0.0056,True
+BF,1.188,0.2758,False
+GA,1.094,0.2955,False
+VL,8.806,0.003,True
+DL,3.167,0.3666,False
+TB,0.001,0.9699,False
+TA,2.4,0.1213,False
